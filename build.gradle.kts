@@ -8,7 +8,7 @@ plugins {
     `java-library`
     `maven-publish`
     id("io.papermc.hangar-publish-plugin") version "0.1.2"
-    id("com.gradleup.shadow") version "8.3.6"
+    id("com.gradleup.shadow") version "9.2.2"
     id("com.modrinth.minotaur") version "2.+"
 }
 
@@ -31,7 +31,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:" + (property("paperVersion") as String) + "-R0.1-SNAPSHOT")
-    compileOnly("dev.iiahmed:ModernDisguise:4.3")
+    implementation("dev.iiahmed:ModernDisguise:4.3")
     implementation("com.lyttledev:lyttleutils:1.2.1")
 }
 
@@ -43,10 +43,13 @@ java.sourceCompatibility = JavaVersion.VERSION_21
 // --- Shadow JAR configuration ---
 tasks.named<ShadowJar>("shadowJar") {
     archiveClassifier.set("")
-    configurations = listOf(project.configurations.runtimeClasspath.get())
-    dependencies {
-        include(dependency("com.lyttledev:lyttleutils"))
-    }
+
+    // Shade everything on runtime classpath; do not restrict with include filters
+    // Relocate both possible base packages used by PacketEvents across versions
+    relocate("dev.iiahmed:ModernDisguise", "com.lyttledev.shaded.disguise")
+    relocate("dev.iiahmed.disguise", "com.lyttledev.shaded.disguise")
+
+    minimize() // Minimize to reduce jar size
 }
 
 // Disable regular jar to prevent accidental use

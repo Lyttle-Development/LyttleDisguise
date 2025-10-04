@@ -33,8 +33,7 @@ public final class LyttleDisguise extends JavaPlugin {
 
         // Commands
         new LyttleDisguiseCommand(this);
-
-        // Handlers
+        new DisguiseCommand(this);
     }
 
     @Override

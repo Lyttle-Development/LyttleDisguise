@@ -16,3 +16,8 @@ commands:
   lyttledisguise:
     description: Admin command, mainly reload the config without the rest of the server
     permission: lyttledisguise.lyttledisguise
+
+  disguise:
+    description: Disguise as another player
+    usage: /disguise <playername>
+    permission: lyttledisguise.disguise
