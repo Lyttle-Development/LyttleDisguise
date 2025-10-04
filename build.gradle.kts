@@ -18,6 +18,7 @@ repositories {
     maven { url = uri("https://oss.sonatype.org/content/groups/public/") }
     maven { url = uri("https://jitpack.io") }
     maven { url = uri("https://repo.maven.apache.org/maven2/") }
+    maven { url = uri("https://repo.gravemc.net/releases/") } // ModernDisguise
     maven {
         name = "GitHubPackages"
         url = uri("https://maven.pkg.github.com/Lyttle-Development/LyttleUtils")
@@ -30,6 +31,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:" + (property("paperVersion") as String) + "-R0.1-SNAPSHOT")
+    compileOnly("dev.iiahmed:ModernDisguise:4.3")
     implementation("com.lyttledev:lyttleutils:1.2.1")
 }
 
