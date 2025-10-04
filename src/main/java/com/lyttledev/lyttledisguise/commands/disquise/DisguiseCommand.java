@@ -1,6 +1,11 @@
 package com.lyttledev.lyttledisguise.commands.disquise;
 
 import com.lyttledev.lyttledisguise.LyttleDisguise;
+import com.lyttledev.lyttledisguise.types.Configs;
+import com.lyttledev.lyttledisguise.commands.disquise.NameUtil;
+import com.lyttledev.lyttledisguise.commands.disquise.SkinResolver;
+import com.lyttledev.lyttledisguise.commands.disquise.DisguiseService;
+import com.lyttledev.lyttledisguise.commands.disquise.DisguiseService.*;
 import com.lyttledev.lyttleutils.types.Message.Replacements;
 import dev.iiahmed.disguise.DisguiseProvider;
 import org.bukkit.Bukkit;
@@ -72,6 +77,13 @@ public final class DisguiseCommand implements CommandExecutor, TabCompleter {
         // Handle /disguise clear (self) or /disguise <player> clear (others)
         if ("clear".equalsIgnoreCase(mode)) {
             service.resetDisguise(target);
+            // Notify initiator if acting on someone else
+            if (target != player) {
+                plugin.message.sendMessage(player, "disguise_cleared_other",
+                        new Replacements.Builder()
+                                .add("<TARGET_PLAYER>", target.getName())
+                                .build());
+            }
             return true;
         }
 
@@ -95,7 +107,17 @@ public final class DisguiseCommand implements CommandExecutor, TabCompleter {
             default:
                 plugin.message.sendMessage(sender, "disguise_usage",
                         new Replacements.Builder().add("<LABEL>", label).build());
-                break;
+                return true;
+        }
+
+        // Inform initiator when acting on someone else
+        if (target != player) {
+            plugin.message.sendMessage(player, "disguise_started_other",
+                    new Replacements.Builder()
+                            .add("<TARGET_PLAYER>", target.getName())
+                            .add("<MODE>", mode.toLowerCase(Locale.ROOT))
+                            .add("<NAME>", name)
+                            .build());
         }
 
         return true;
@@ -133,7 +155,6 @@ public final class DisguiseCommand implements CommandExecutor, TabCompleter {
         // Others-syntax detection
         boolean othersSyntax = false;
         int argOffset = 0;
-        Player targetPlayer = null;
         if (args.length >= 2
                 && !args[0].equalsIgnoreCase("username")
                 && !args[0].equalsIgnoreCase("skinname")
@@ -141,7 +162,6 @@ public final class DisguiseCommand implements CommandExecutor, TabCompleter {
             Player found = Bukkit.getPlayerExact(args[0]);
             if (found != null && canTargetOthers) {
                 othersSyntax = true;
-                targetPlayer = found;
                 argOffset = 1;
             }
         }
@@ -155,73 +175,52 @@ public final class DisguiseCommand implements CommandExecutor, TabCompleter {
             return suggestions;
         }
 
-        // /disguise <player> clear [no more options]
-        if (args.length >= 3 && othersSyntax && "clear".equalsIgnoreCase(args[1])) {
+        // If 'clear', stop suggesting further options
+        if (othersSyntax && args.length >= 3 && "clear".equalsIgnoreCase(args[1])) {
+            return suggestions;
+        }
+        if (!othersSyntax && args.length >= 2 && "clear".equalsIgnoreCase(args[0])) {
             return suggestions;
         }
 
-        // /disguise <player> username <tab> (arg 3 in others-syntax)
+        // /disguise <player> username <tab> (arg 3 in others-syntax) -> name: online + offline
         if (args.length == 3 && othersSyntax) {
-            String mode = args[1];
-            if ("clear".equalsIgnoreCase(mode)) return suggestions;
             String prefix = args[2].toLowerCase(Locale.ROOT);
-            Set<String> names = new LinkedHashSet<>();
-            int cap = 0;
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                String name = p.getName();
-                if (name != null && name.toLowerCase(Locale.ROOT).startsWith(prefix)) {
-                    names.add(name);
-                    if (++cap >= NAME_SUGGESTION_CAP) break;
-                }
-            }
-            if (cap < NAME_SUGGESTION_CAP) {
-                for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
-                    String name = op.getName();
-                    if (name != null && !names.contains(name) && name.toLowerCase(Locale.ROOT).startsWith(prefix)) {
-                        names.add(name);
-                        if (++cap >= NAME_SUGGESTION_CAP) break;
-                    }
-                }
-            }
-            suggestions.addAll(names);
+            addNameSuggestions(prefix, suggestions);
             return suggestions;
         }
 
-        // /disguise username <tab> or /disguise skinname <tab> (arg 2 in self)
+        // /disguise username <tab> or /disguise skinname <tab> (arg 2 in self) -> name: online + offline
         if (args.length == 2 && !othersSyntax) {
-            String mode = args[0];
-            if ("clear".equalsIgnoreCase(mode)) return suggestions;
             String prefix = args[1].toLowerCase(Locale.ROOT);
-            Set<String> names = new LinkedHashSet<>();
-            int cap = 0;
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                String name = p.getName();
-                if (name != null && name.toLowerCase(Locale.ROOT).startsWith(prefix)) {
-                    names.add(name);
-                    if (++cap >= NAME_SUGGESTION_CAP) break;
-                }
-            }
-            if (cap < NAME_SUGGESTION_CAP) {
-                for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
-                    String name = op.getName();
-                    if (name != null && !names.contains(name) && name.toLowerCase(Locale.ROOT).startsWith(prefix)) {
-                        names.add(name);
-                        if (++cap >= NAME_SUGGESTION_CAP) break;
-                    }
-                }
-            }
-            suggestions.addAll(names);
+            addNameSuggestions(prefix, suggestions);
             return suggestions;
         }
 
-        // /disguise username <name> [no more options] (arg 3 in self)
-        if (args.length >= 3 && !othersSyntax && "clear".equalsIgnoreCase(args[0])) {
-            return suggestions;
-        }
-        if (args.length == 3 && !othersSyntax) {
-            return suggestions;
-        }
-
+        // No further suggestions beyond required args
         return suggestions;
+    }
+
+    private void addNameSuggestions(String prefix, List<String> out) {
+        // Online first
+        int cap = 0;
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            String n = p.getName();
+            if (n != null && n.toLowerCase(Locale.ROOT).startsWith(prefix)) {
+                out.add(n);
+                if (++cap >= NAME_SUGGESTION_CAP) return;
+            }
+        }
+        // Then offline (dedupe)
+        Set<String> existing = new HashSet<>(out);
+        for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
+            String n = op.getName();
+            if (n != null
+                    && !existing.contains(n)
+                    && n.toLowerCase(Locale.ROOT).startsWith(prefix)) {
+                out.add(n);
+                if (++cap >= NAME_SUGGESTION_CAP) return;
+            }
+        }
     }
 }

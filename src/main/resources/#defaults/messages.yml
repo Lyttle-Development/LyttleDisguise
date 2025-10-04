@@ -37,3 +37,10 @@ disguise_name_retry: "&7Name in use: &f<CANDIDATE>&7, trying another..."
 disguise_name_retry_success: "&aUsing available name: &f<CANDIDATE>"
 disguise_name_giveup: "&cNo available variant for &f<BASE>&c after &f<ATTEMPTS>&c attempts."
 players_only: "&cOnly players can use this command."
+
+###########################
+# Extra notifications to initiator when targeting others
+###########################
+# Shown to the command executor when they act on another player.
+disguise_started_other: "&7Applying disguise to &e<TARGET_PLAYER>&7 (&f<MODE>&7=&f<NAME>&7)..."
+disguise_cleared_other: "&7Cleared disguise for &e<TARGET_PLAYER>&7."
