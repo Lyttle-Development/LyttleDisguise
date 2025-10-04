@@ -24,8 +24,17 @@ message_not_found: "<red>Oh... I can't react to that. (Contact the Administrator
 ###########################
 # Disguise
 ###########################
-
-disguise_usage: "&eUsage: &f/<LABEL> <name|reset> [player|uuid|true|false]"
+disguise_usage: |
+  &eUsage:
+  &f/disguise username <name>
+  &f/disguise skinname <name>
+  &f/disguise clear
+  &7Or for others:
+  &f/disguise <player> username <name>
+  &f/disguise <player> skinname <name>
+  &f/disguise <player> clear
+  &8<name> can be any online or offline player.
+  &8<player> can only be an online player.
 disguise_resolving: "&7Resolving skin for &e<TARGET>&7..."
 disguise_resolve_failed: "&cNo skin found for &e<TARGET>&c."
 disguise_update_failed: "&cSkin update failed: &e<ERROR>&c."

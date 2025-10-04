@@ -83,6 +83,17 @@ public final class LyttleDisguise extends JavaPlugin {
                 // Recheck if the config is fully migrated.
                 migrateConfig();
                 break;
+            case "1":
+            case "2": // Double update to fix skipped version.
+                // Migrate config entries.
+                 config.messages.set("disguise_usage", config.defaultMessages.get("disguise_usage"));
+
+                // Update config version.
+                config.general.set("config_version", 3);
+
+                // Recheck if the config is fully migrated.
+                migrateConfig();
+                break;
             default:
                 break;
         }
