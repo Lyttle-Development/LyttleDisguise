@@ -18,6 +18,6 @@ commands:
     permission: lyttledisguise.lyttledisguise
 
   disguise:
-    description: Disguise as another player
-    usage: /disguise <playername>
+    description: Disguise as an entity or another player
+    usage: /disguise <entity|player|username|skinname|clear> <value>
     permission: lyttledisguise.disguise

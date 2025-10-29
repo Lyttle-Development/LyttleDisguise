@@ -4,6 +4,7 @@ import com.lyttledev.lyttledisguise.LyttleDisguise;
 import com.lyttledev.lyttleutils.types.Message.Replacements;
 import dev.iiahmed.disguise.*;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,6 +31,10 @@ final class DisguiseService {
     }
 
     void resetDisguise(@NotNull Player player) {
+        resetDisguise(player, player);
+    }
+
+    void resetDisguise(@NotNull Player player, @NotNull Player initiator) {
         final long start = System.currentTimeMillis();
         final UndisguiseResponse res = provider.undisguise(player);
         if (res == UndisguiseResponse.SUCCESS || res == UndisguiseResponse.FAIL_ALREADY_UNDISGUISED) {
@@ -37,9 +42,94 @@ final class DisguiseService {
                     new Replacements.Builder()
                             .add("<DURATION>", String.valueOf(System.currentTimeMillis() - start))
                             .build());
+            // Also notify initiator if different from target
+            if (player != initiator) {
+                plugin.message.sendMessage(initiator, "disguise_reset_success_other",
+                        new Replacements.Builder()
+                                .add("<TARGET_PLAYER>", player.getName())
+                                .add("<DURATION>", String.valueOf(System.currentTimeMillis() - start))
+                                .build());
+            }
         } else {
             plugin.message.sendMessage(player, "disguise_undisguise_failed",
                     new Replacements.Builder().add("<RESULT>", res.toString()).build());
+            // Also notify initiator if different from target
+            if (player != initiator) {
+                plugin.message.sendMessage(initiator, "disguise_reset_failed_other",
+                        new Replacements.Builder()
+                                .add("<TARGET_PLAYER>", player.getName())
+                                .add("<RESULT>", res.toString())
+                                .build());
+            }
+        }
+    }
+
+    void applyEntityDisguise(@NotNull Player player, @NotNull EntityType entityType) {
+        applyEntityDisguise(player, entityType, player);
+    }
+
+    void applyEntityDisguise(@NotNull Player player, @NotNull EntityType entityType, @NotNull Player initiator) {
+        // cleanup stale disguise to free any previous state
+        preCleanup(player);
+
+        final long start = System.currentTimeMillis();
+        
+        try {
+            // Use ModernDisguise's Entity builder with the entity type
+            final Disguise disguise = Disguise.builder()
+                    .setEntity(builder -> builder.setType(entityType))
+                    .build();
+            
+            final DisguiseResponse result = provider.disguise(player, disguise);
+            
+            if (result == DisguiseResponse.SUCCESS) {
+                plugin.message.sendMessage(player, "disguise_entity_applied",
+                        new Replacements.Builder()
+                                .add("<ENTITY_TYPE>", entityType.name())
+                                .add("<RESULT>", result.toString())
+                                .add("<DURATION>", String.valueOf(System.currentTimeMillis() - start))
+                                .build());
+                // Also notify initiator if different from target
+                if (player != initiator) {
+                    plugin.message.sendMessage(initiator, "disguise_entity_applied_other",
+                            new Replacements.Builder()
+                                    .add("<TARGET_PLAYER>", player.getName())
+                                    .add("<ENTITY_TYPE>", entityType.name())
+                                    .add("<RESULT>", result.toString())
+                                    .add("<DURATION>", String.valueOf(System.currentTimeMillis() - start))
+                                    .build());
+                }
+            } else {
+                plugin.message.sendMessage(player, "disguise_entity_failed",
+                        new Replacements.Builder()
+                                .add("<ENTITY_TYPE>", entityType.name())
+                                .add("<RESULT>", result.toString())
+                                .build());
+                // Also notify initiator if different from target
+                if (player != initiator) {
+                    plugin.message.sendMessage(initiator, "disguise_entity_failed_other",
+                            new Replacements.Builder()
+                                    .add("<TARGET_PLAYER>", player.getName())
+                                    .add("<ENTITY_TYPE>", entityType.name())
+                                    .add("<RESULT>", result.toString())
+                                    .build());
+                }
+            }
+        } catch (Exception ex) {
+            plugin.message.sendMessage(player, "disguise_entity_error",
+                    new Replacements.Builder()
+                            .add("<ENTITY_TYPE>", entityType.name())
+                            .add("<ERROR>", ex.getMessage() == null ? "Unknown error" : ex.getMessage())
+                            .build());
+            // Also notify initiator if different from target
+            if (player != initiator) {
+                plugin.message.sendMessage(initiator, "disguise_entity_error_other",
+                        new Replacements.Builder()
+                                .add("<TARGET_PLAYER>", player.getName())
+                                .add("<ENTITY_TYPE>", entityType.name())
+                                .add("<ERROR>", ex.getMessage() == null ? "Unknown error" : ex.getMessage())
+                                .build());
+            }
         }
     }
 
@@ -47,6 +137,14 @@ final class DisguiseService {
                        @NotNull String newNameRaw,
                        String fetchTargetOrNull,
                        boolean doFetch) {
+        applyDisguise(player, newNameRaw, fetchTargetOrNull, doFetch, player);
+    }
+
+    void applyDisguise(@NotNull Player player,
+                       @NotNull String newNameRaw,
+                       String fetchTargetOrNull,
+                       boolean doFetch,
+                       @NotNull Player initiator) {
 
         // cleanup stale disguise to free any previous nickname registration
         preCleanup(player);
@@ -63,6 +161,17 @@ final class DisguiseService {
                             .add("<RESULT>", result.toString())
                             .add("<DURATION>", String.valueOf(System.currentTimeMillis() - start))
                             .build());
+            // Also notify initiator if different from target
+            if (player != initiator) {
+                plugin.message.sendMessage(initiator, "disguise_done_other",
+                        new Replacements.Builder()
+                                .add("<TARGET_PLAYER>", player.getName())
+                                .add("<NEW_NAME>", NameUtil.getEffectiveNameFromResult(baseName, result))
+                                .add("<SKIN_TARGET>", "-")
+                                .add("<RESULT>", result.toString())
+                                .add("<DURATION>", String.valueOf(System.currentTimeMillis() - start))
+                                .build());
+            }
             return;
         }
 
@@ -75,9 +184,18 @@ final class DisguiseService {
             try {
                 final SkinResolver.SkinData data = skinResolver.resolve(target);
                 if (data == null) {
-                    Bukkit.getScheduler().runTask(plugin, () ->
-                            plugin.message.sendMessage(player, "disguise_resolve_failed",
-                                    new Replacements.Builder().add("<TARGET>", target).build()));
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        plugin.message.sendMessage(player, "disguise_resolve_failed",
+                                new Replacements.Builder().add("<TARGET>", target).build());
+                        // Also notify initiator if different from target
+                        if (player != initiator) {
+                            plugin.message.sendMessage(initiator, "disguise_resolve_failed_other",
+                                    new Replacements.Builder()
+                                            .add("<TARGET_PLAYER>", player.getName())
+                                            .add("<TARGET>", target)
+                                            .build());
+                        }
+                    });
                     return;
                 }
 
@@ -90,13 +208,33 @@ final class DisguiseService {
                                     .add("<RESULT>", result.toString())
                                     .add("<DURATION>", String.valueOf(System.currentTimeMillis() - start))
                                     .build());
+                    // Also notify initiator if different from target
+                    if (player != initiator) {
+                        plugin.message.sendMessage(initiator, "disguise_done_other",
+                                new Replacements.Builder()
+                                        .add("<TARGET_PLAYER>", player.getName())
+                                        .add("<NEW_NAME>", NameUtil.getEffectiveNameFromResult(baseName, result))
+                                        .add("<SKIN_TARGET>", target)
+                                        .add("<RESULT>", result.toString())
+                                        .add("<DURATION>", String.valueOf(System.currentTimeMillis() - start))
+                                        .build());
+                    }
                 });
             } catch (Exception ex) {
-                Bukkit.getScheduler().runTask(plugin, () ->
-                        plugin.message.sendMessage(player, "disguise_update_failed",
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    plugin.message.sendMessage(player, "disguise_update_failed",
+                            new Replacements.Builder()
+                                    .add("<ERROR>", ex.getMessage() == null ? "Unknown error" : ex.getMessage())
+                                    .build());
+                    // Also notify initiator if different from target
+                    if (player != initiator) {
+                        plugin.message.sendMessage(initiator, "disguise_update_failed_other",
                                 new Replacements.Builder()
+                                        .add("<TARGET_PLAYER>", player.getName())
                                         .add("<ERROR>", ex.getMessage() == null ? "Unknown error" : ex.getMessage())
-                                        .build()));
+                                        .build());
+                    }
+                });
             }
         });
     }
