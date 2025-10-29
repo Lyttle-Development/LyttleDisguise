@@ -31,7 +31,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:" + (property("paperVersion") as String) + "-R0.1-SNAPSHOT")
-    implementation("dev.iiahmed:ModernDisguise:4.3")
+    implementation("dev.iiahmed:ModernDisguise:4.4")
     implementation("com.lyttledev:lyttleutils:1.2.1")
 }
 
