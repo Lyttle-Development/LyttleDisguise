@@ -26,13 +26,16 @@ message_not_found: "<red>Oh... I can't react to that. (Contact the Administrator
 ###########################
 disguise_usage: |
   &eUsage:
+  &f/disguise entity <entity_type>
   &f/disguise username <name>
   &f/disguise skinname <name>
   &f/disguise clear
   &7Or for others:
+  &f/disguise <player> entity <entity_type>
   &f/disguise <player> username <name>
   &f/disguise <player> skinname <name>
   &f/disguise <player> clear
+  &8<entity_type> can be any valid entity like ZOMBIE, COW, etc.
   &8<name> can be any online or offline player.
   &8<player> can only be an online player.
 disguise_resolving: "&7Resolving skin for &e<TARGET>&7..."
@@ -45,6 +48,10 @@ disguise_cleanup_result: "&7Refreshing previous disguise: &f<RESULT>"
 disguise_name_retry: "&7Name in use: &f<CANDIDATE>&7, trying another..."
 disguise_name_retry_success: "&aUsing available name: &f<CANDIDATE>"
 disguise_name_giveup: "&cNo available variant for &f<BASE>&c after &f<ATTEMPTS>&c attempts."
+disguise_entity_applied: "&aDisguise applied as entity &f<ENTITY_TYPE>&a. &7Result: &f<RESULT>&7, Took: &f<DURATION>ms"
+disguise_entity_failed: "&cFailed to disguise as entity &f<ENTITY_TYPE>&c. &7Result: &f<RESULT>"
+disguise_entity_error: "&cError disguising as entity &f<ENTITY_TYPE>&c: &e<ERROR>"
+disguise_invalid_entity: "&cInvalid entity type: &f<ENTITY>&c. Use tab-completion to see valid options."
 players_only: "&cOnly players can use this command."
 
 ###########################
@@ -53,3 +60,11 @@ players_only: "&cOnly players can use this command."
 # Shown to the command executor when they act on another player.
 disguise_started_other: "&7Applying disguise to &e<TARGET_PLAYER>&7 (&f<MODE>&7=&f<NAME>&7)..."
 disguise_cleared_other: "&7Cleared disguise for &e<TARGET_PLAYER>&7."
+disguise_reset_success_other: "&aDisguise cleared for &e<TARGET_PLAYER>&a. &7Took: &f<DURATION>ms"
+disguise_reset_failed_other: "&cFailed to clear disguise for &e<TARGET_PLAYER>&c. &7Result: &f<RESULT>"
+disguise_entity_applied_other: "&aDisguised &e<TARGET_PLAYER>&a as entity &f<ENTITY_TYPE>&a. &7Result: &f<RESULT>&7, Took: &f<DURATION>ms"
+disguise_entity_failed_other: "&cFailed to disguise &e<TARGET_PLAYER>&c as entity &f<ENTITY_TYPE>&c. &7Result: &f<RESULT>"
+disguise_entity_error_other: "&cError disguising &e<TARGET_PLAYER>&c as entity &f<ENTITY_TYPE>&c: &e<ERROR>"
+disguise_done_other: "&aDisguised &e<TARGET_PLAYER>&a. &7Name: &f<NEW_NAME>&7, Skin: &f<SKIN_TARGET>&7, Result: &f<RESULT>&7, Took: &f<DURATION>ms"
+disguise_resolve_failed_other: "&cNo skin found for &e<TARGET>&c when disguising &e<TARGET_PLAYER>&c."
+disguise_update_failed_other: "&cFailed to disguise &e<TARGET_PLAYER>&c: &e<ERROR>&c."
