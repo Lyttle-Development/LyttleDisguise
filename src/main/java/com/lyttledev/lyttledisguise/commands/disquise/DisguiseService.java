@@ -4,6 +4,7 @@ import com.lyttledev.lyttledisguise.LyttleDisguise;
 import com.lyttledev.lyttleutils.types.Message.Replacements;
 import dev.iiahmed.disguise.*;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,6 +41,41 @@ final class DisguiseService {
         } else {
             plugin.message.sendMessage(player, "disguise_undisguise_failed",
                     new Replacements.Builder().add("<RESULT>", res.toString()).build());
+        }
+    }
+
+    void applyEntityDisguise(@NotNull Player player, @NotNull EntityType entityType) {
+        // cleanup stale disguise to free any previous state
+        preCleanup(player);
+
+        final long start = System.currentTimeMillis();
+        
+        try {
+            final Disguise disguise = Disguise.builder()
+                    .setEntity(entityType)
+                    .build();
+            
+            final DisguiseResponse result = provider.disguise(player, disguise);
+            
+            if (result == DisguiseResponse.SUCCESS) {
+                plugin.message.sendMessage(player, "disguise_entity_applied",
+                        new Replacements.Builder()
+                                .add("<ENTITY_TYPE>", entityType.name())
+                                .add("<RESULT>", result.toString())
+                                .add("<DURATION>", String.valueOf(System.currentTimeMillis() - start))
+                                .build());
+            } else {
+                plugin.message.sendMessage(player, "disguise_entity_failed",
+                        new Replacements.Builder()
+                                .add("<ENTITY_TYPE>", entityType.name())
+                                .add("<RESULT>", result.toString())
+                                .build());
+            }
+        } catch (Exception ex) {
+            plugin.message.sendMessage(player, "disguise_update_failed",
+                    new Replacements.Builder()
+                            .add("<ERROR>", ex.getMessage() == null ? "Unknown error" : ex.getMessage())
+                            .build());
         }
     }
 

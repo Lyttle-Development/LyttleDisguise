@@ -94,6 +94,19 @@ public final class LyttleDisguise extends JavaPlugin {
                 // Recheck if the config is fully migrated.
                 migrateConfig();
                 break;
+            case "3":
+                // Migrate new entity disguise messages.
+                config.messages.set("disguise_usage", config.defaultMessages.get("disguise_usage"));
+                config.messages.set("disguise_entity_applied", config.defaultMessages.get("disguise_entity_applied"));
+                config.messages.set("disguise_entity_failed", config.defaultMessages.get("disguise_entity_failed"));
+                config.messages.set("disguise_invalid_entity", config.defaultMessages.get("disguise_invalid_entity"));
+
+                // Update config version.
+                config.general.set("config_version", 4);
+
+                // Recheck if the config is fully migrated.
+                migrateConfig();
+                break;
             default:
                 break;
         }
