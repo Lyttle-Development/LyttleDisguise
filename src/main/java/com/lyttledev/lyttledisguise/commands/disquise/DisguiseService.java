@@ -51,8 +51,9 @@ final class DisguiseService {
         final long start = System.currentTimeMillis();
         
         try {
+            // Use ModernDisguise's Entity builder with the entity type
             final Disguise disguise = Disguise.builder()
-                    .setEntity(entityType)
+                    .setEntity(builder -> builder.setType(entityType))
                     .build();
             
             final DisguiseResponse result = provider.disguise(player, disguise);
