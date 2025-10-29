@@ -99,6 +99,7 @@ public final class LyttleDisguise extends JavaPlugin {
                 config.messages.set("disguise_usage", config.defaultMessages.get("disguise_usage"));
                 config.messages.set("disguise_entity_applied", config.defaultMessages.get("disguise_entity_applied"));
                 config.messages.set("disguise_entity_failed", config.defaultMessages.get("disguise_entity_failed"));
+                config.messages.set("disguise_entity_error", config.defaultMessages.get("disguise_entity_error"));
                 config.messages.set("disguise_invalid_entity", config.defaultMessages.get("disguise_invalid_entity"));
 
                 // Update config version.

@@ -72,8 +72,9 @@ final class DisguiseService {
                                 .build());
             }
         } catch (Exception ex) {
-            plugin.message.sendMessage(player, "disguise_update_failed",
+            plugin.message.sendMessage(player, "disguise_entity_error",
                     new Replacements.Builder()
+                            .add("<ENTITY_TYPE>", entityType.name())
                             .add("<ERROR>", ex.getMessage() == null ? "Unknown error" : ex.getMessage())
                             .build());
         }

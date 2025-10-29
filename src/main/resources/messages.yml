@@ -50,6 +50,7 @@ disguise_name_retry_success: "&aUsing available name: &f<CANDIDATE>"
 disguise_name_giveup: "&cNo available variant for &f<BASE>&c after &f<ATTEMPTS>&c attempts."
 disguise_entity_applied: "&aDisguise applied as entity &f<ENTITY_TYPE>&a. &7Result: &f<RESULT>&7, Took: &f<DURATION>ms"
 disguise_entity_failed: "&cFailed to disguise as entity &f<ENTITY_TYPE>&c. &7Result: &f<RESULT>"
+disguise_entity_error: "&cError disguising as entity &f<ENTITY_TYPE>&c: &e<ERROR>"
 disguise_invalid_entity: "&cInvalid entity type: &f<ENTITY>&c. Use tab-completion to see valid options."
 players_only: "&cOnly players can use this command."
 

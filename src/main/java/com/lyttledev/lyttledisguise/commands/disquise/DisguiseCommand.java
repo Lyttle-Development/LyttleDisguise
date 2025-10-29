@@ -36,11 +36,14 @@ public final class DisguiseCommand implements CommandExecutor, TabCompleter {
         this.service = new DisguiseService(plugin, provider, new SkinResolver(plugin));
     }
 
+    private static boolean isValidEntityType(EntityType type) {
+        return type.isAlive() && type.isSpawnable() && type != EntityType.PLAYER;
+    }
+
     private static List<String> getValidEntityTypes() {
         List<String> types = new ArrayList<>();
         for (EntityType type : EntityType.values()) {
-            // Filter out non-living/special entity types
-            if (type.isAlive() && type.isSpawnable() && type != EntityType.PLAYER) {
+            if (isValidEntityType(type)) {
                 types.add(type.name());
             }
         }
@@ -118,7 +121,7 @@ public final class DisguiseCommand implements CommandExecutor, TabCompleter {
             case "entity":
                 try {
                     EntityType entityType = EntityType.valueOf(argument.toUpperCase(Locale.ROOT));
-                    if (!entityType.isAlive() || !entityType.isSpawnable() || entityType == EntityType.PLAYER) {
+                    if (!isValidEntityType(entityType)) {
                         plugin.message.sendMessage(sender, "disguise_invalid_entity",
                                 new Replacements.Builder().add("<ENTITY>", argument).build());
                         return true;
