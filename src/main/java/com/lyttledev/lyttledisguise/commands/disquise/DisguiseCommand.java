@@ -94,14 +94,7 @@ public final class DisguiseCommand implements CommandExecutor, TabCompleter {
 
         // Handle /disguise clear (self) or /disguise <player> clear (others)
         if ("clear".equalsIgnoreCase(mode)) {
-            service.resetDisguise(target);
-            // Notify initiator if acting on someone else
-            if (target != player) {
-                plugin.message.sendMessage(player, "disguise_cleared_other",
-                        new Replacements.Builder()
-                                .add("<TARGET_PLAYER>", target.getName())
-                                .build());
-            }
+            service.resetDisguise(target, player);
             return true;
         }
 
@@ -126,7 +119,7 @@ public final class DisguiseCommand implements CommandExecutor, TabCompleter {
                                 new Replacements.Builder().add("<ENTITY>", argument).build());
                         return true;
                     }
-                    service.applyEntityDisguise(target, entityType);
+                    service.applyEntityDisguise(target, entityType, player);
                 } catch (IllegalArgumentException e) {
                     plugin.message.sendMessage(sender, "disguise_invalid_entity",
                             new Replacements.Builder().add("<ENTITY>", argument).build());
@@ -134,25 +127,15 @@ public final class DisguiseCommand implements CommandExecutor, TabCompleter {
                 }
                 break;
             case "username":
-                service.applyDisguise(target, argument, argument, true);
+                service.applyDisguise(target, argument, argument, true, player);
                 break;
             case "skinname":
-                service.applyDisguise(target, target.getName(), argument, true);
+                service.applyDisguise(target, target.getName(), argument, true, player);
                 break;
             default:
                 plugin.message.sendMessage(sender, "disguise_usage",
                         new Replacements.Builder().add("<LABEL>", label).build());
                 return true;
-        }
-
-        // Inform initiator when acting on someone else
-        if (target != player) {
-            plugin.message.sendMessage(player, "disguise_started_other",
-                    new Replacements.Builder()
-                            .add("<TARGET_PLAYER>", target.getName())
-                            .add("<MODE>", mode.toLowerCase(Locale.ROOT))
-                            .add("<NAME>", argument)
-                            .build());
         }
 
         return true;
